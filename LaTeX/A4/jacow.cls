@@ -104,7 +104,7 @@
 %                                                   Volker RW Schaa, 02 May 2014
 %
 % v1.95
-% - only change to the version 1.94 are the extended documenation and license
+% - only change to the version 1.94 are the extended documentation and license
 %   statement (lppl1.3c) as preparation for publication on CTAN.
 %                                                   Volker RW Schaa, 02 May 2014
 %
@@ -146,15 +146,34 @@
 % v2.4
 % - version 2.3 did not work for XeTeX/LuaTeX, therefore font change using
 %   \def\UrlFont and switching the fontencoding to T1 (suggested by Ulrike Fischer)
-% - package amsmath included to provide 
+% - package amsmath included
 %                                                  Volker RW Schaa, 01 Apr 2019
+%% v2.5
+% - flushend dropped the option keeplastbox, therefore removed from jacow package
+%   option list
+% - Option "binary-units" has been removed from siunitx release.
+% - Option "detect-mode" has been deprecated in this (siunitx) release: v3.0.32
+%        Use "mode=match" as a replacement.
+% - Option "detect-weight" has been deprecated in this (siunitx) release: v3.0.32
+%        Use "reset-text-series=false, text-series-to-math=true" as a replacement.
+% - fixltx2e is not required with releases after 2015
+%                                                  Volker RW Schaa, 14 Oct 2021
+%% v2.6
+% - ifluatex/ifxetex dropped for iftex
+%                                                  Volker RW Schaa, 11 Nov 2021
 %
-\def\fileversion{2.4}
-\def\filedate{2019/04/01}
-\def\docdate {2019/04/01}
+%% v2.7
+% - addded some biblatex macros to achieve closer JACoW reference formatting 
+%   than standard ieeetran 
+%                                                  Volker RW Schaa, 02 Feb 2022
+%
+%
+\def\fileversion{2.7}
+\def\filedate{2022/02/02}
+\def\docdate {2022/02/02}
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{jacow}[\filedate\space Version \fileversion]
+\ProvidesClass{jacow}[\filedate\space v\fileversion fixes for siunitx, stfloats, biblatex ref formatting] 
 
 \typeout{------------------------------------------------------------------------}
 \typeout{LaTeX2e Class file for Accelerator Conference publication for LaTeX2e users}
@@ -197,11 +216,10 @@
 
 \RequirePackage{fix-cm}
 \LoadClass[10pt,twocolumn]{article}
-\RequirePackage[keeplastbox]{flushend} %% modified
+\RequirePackage[]{flushend} %% modified 2.5
 % Tools:
 \RequirePackage{etoolbox}
-\RequirePackage{ifxetex}
-\RequirePackage{ifluatex}
+\RequirePackage{iftex}
 \RequirePackage{textcase}
 %
 %Add thanks to the list of "\@nonchangecase"-commands from textcase:
@@ -222,8 +240,14 @@
       \protected@edef\reserved@a{\endgroup
           \noexpand\@skipmath#3#4$\valign$}%
       \reserved@a}
-
-\RequirePackage[detect-mode,detect-weight, binary-units=true]{siunitx}
+%
+% Option "binary-units" has been removed from (siunitx)
+% Option "detect-mode" has been deprecated in this (siunitx) release: v3.0.32
+%        Use "mode=match" as a replacement.
+% Option "detect-weight" has been deprecated in this (siunitx) release: v3.0.32
+%        Use "reset-text-series=false, text-series-to-math=true" as a replacement.
+%
+\RequirePackage[mode=match, reset-text-series=false, text-series-to-math=true]{siunitx}
 \RequirePackage{graphicx}
 \RequirePackage{booktabs}
 \RequirePackage[figureposition=bottom,tableposition=top,skip=5pt]{caption}
@@ -428,16 +452,108 @@
 %% when to activate this? Paper format acus/letter
 %  \DefineBibliographyExtras{american}{\stdpunctuation} % mod
   % Drop urls for article and inproceedings entries
-%2.00  \DeclareFieldFormat
-%2.00  [article,inproceedings]
-%2.00  {url}{}
-  %
-  \setlength\bibitemsep{0pt}
-  \setlength\bibparsep{0pt}
-  \setlength\biblabelsep{5pt}
+%2.7
+% check https://tex.stackexchange.com/questions/6743/biblatex-changing-the-order-of-entries
+%       https://tex.stackexchange.com/questions/12806/guidelines-for-customizing-biblatex-styles/13076#13076  
+%       https://tex.stackexchange.com/questions/10203/biblatex-putting-thin-spaces-between-initials
+%       https://tex.stackexchange.com/questions/560346/how-to-suppress-annotation-field-from-bbl-file-in-biblatex
+%       https://tex.stackexchange.com/questions/496995/advanced-introduction-to-biblatex-coding-guidelines-for-database
+%-------------------------------------
+%
+% if BibLaTeX is used
+%
+% modify macros so the formatted output corresponds to JACoW's idea of IEEEtran
+    % remove stretchability from biblatex URLs/DOIs
+ 	\toks0\expandafter{\biburlsetup}\edef\biburlsetup{\the\toks0 \Urlmuskip =0mu\relax}
+ 	% Removing period after DOI
+ 	\renewcommand*{\finentrypunct}{\ifboolexpr{togl {bbx:doi} and not test {\iffieldundef{doi}}}{}{\addperiod}}
+  	% format doi: as part of the link using the same font
+  	\DeclareFieldFormat{doi}{%
+ 	  \ifhyperref
+ 	    {\href{https://doi.org/#1}{\nolinkurl{#1}}}
+ 	    {\nolinkurl{doi:#1}}%
+ 	}
+	%
+	% make sure that there is no break between initial and lastname
+	% and thinspaces between muliple initials
+	%
+	\renewcommand*\bibnamedelimd{~}
+	\renewcommand\bibinitdelim{\addnbthinspace}
+	%
+ 	% format venue, event, date without round brackets
+    % https://tex.stackexchange.com/questions/446732/biblatex-field-venueeventdate-without-round-brackets
+ 	\renewbibmacro*{event+venue+date}{%
+ 	    \printfield{eventtitle}%
+ 	    \newunit
+ 	    \printfield{eventtitleaddon}%
+ 	    \newunit
+ 	    \printfield{venue}%
+ 	    \setunit*{\addcomma\space}%
+ 	    \printeventdate%
+ 	    \newunit%
+ 	}
+  	\DeclareFieldFormat{eid}{%
+  	    {paper #1}%
+  	}
+ 	%
+ 	\renewbibmacro*{volume+number+eid}{%
+ 	  \printfield{volume}%
+ 	  \newunit
+ 	  \printfield{number}%    
+ 	  \newunit
+ 	  \printfield{eid}%
+ 	}
+ 	%
+ 	% Clean up the bibtex rather than editing it for extensive JACoW BibTeX records
+ 	%
+ 	\AtEveryBibitem{% 
+ 	 \clearlist{address}
+ 	 \clearfield{date}
+ 	 \clearfield{eprint}
+ 	 \clearfield{isbn}
+ 	 \clearfield{issn}
+ 	 %
+ 	 % use/print "note" if "booktitle" is not given: example "data for this conference"
+     %
+ 	 \iffieldundef{booktitle}{}{\clearfield{note}} 
+ 	 \clearlist{location}
+ 	 \clearfield{month}
+ 	 \clearfield{series}
+ 	 \ifentrytype{book}{}{% Remove publisher and editor except for books
+ 	  \clearlist{publisher}
+ 	  \clearname{editor}
+ 	 }
+ 	}
+	%
+	% print url if no doi
+	%
+ 	\renewbibmacro*{doi+eprint+url}{%
+ 	    \printfield{doi}%
+ 	    \newunit\newblock%
+ 	    \iftoggle{bbx:eprint}{%
+ 	        \usebibmacro{eprint}%
+ 	    }{}%
+ 	    \newunit\newblock%
+ 	    \iffieldundef{doi}{%
+ 	        \usebibmacro{url+urldate}}%
+ 	        {}%
+ 	}
+ 	% format ISSN like URLs
+  	\DeclareFieldFormat{issn}{%
+  	    {\texttt{ISSN:#1}}%
+  	}
+ 	% format ISSN like URLs
+  	\DeclareFieldFormat{issn}{%
+  	    {\texttt{ISSN:#1}}%
+  	}
+    % set vertical distance between items
+   	\setlength\bibitemsep{3pt plus 2.0pt minus 1.0pt}
+	\setlength\bibparsep{0pt}
+    \setlength\biblabelsep{5pt}
   \ifjacowrefpage\preto\blx@bibliography{\clearpage}\fi
   \AtBeginBibliography{\small\clubpenalty4000\widowpenalty4000}%
- }
+ } % end if biblatex
+ %
  {\RequirePackage{cite}
   % Redefine to use smaller fonts
   \def\thebibliography#1{\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}%
@@ -461,7 +577,7 @@
 
 %avoid bug of fixltx2e:
 %http://www.latex-project.org/cgi-bin/ltxbugs2html?pr=latex/4023
-\RequirePackage{fixltx2e}%
+%\RequirePackage{fixltx2e}%
 \def\@outputdblcol{%
   \if@firstcolumn
     \global\@firstcolumnfalse
