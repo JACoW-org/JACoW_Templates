@@ -179,10 +179,14 @@
 %   whether (media/crop box) values are "pt" or "bp".
 %                                       Zhichu Chen, Volker RW Schaa, 10 Jun 2022
 %
+%% v2.9
+% - remove the math-micro option from siunitx as it was depricated.
+%                                                    Volker RW Schaa, 12 Jun 2022
 %
-\def\fileversion{2.8}
-\def\filedate{2022/06/10}
-\def\docdate {2022/06/10}
+%
+\def\fileversion{2.9}
+\def\filedate{2022/06/12}
+\def\docdate {2022/06/12}
 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{jacow}[\filedate\space v\fileversion\space ref formatting stretchability] 
@@ -286,27 +290,6 @@
 		centering]
 		{geometry}
 
-% Page layout:
-%\RequirePackage[%
-%=		textwidth   = 170mm,
-%~		textheight  = 9.5in,
-%~		textheight  = 241mm,
-%~		paperwidth  = 210mm,	
-%~		paperheight = 11in,
-%%  paperheight = 794.97pt,	% paperheight = 792bp
-%%  paperwidth  = 597.23pt,  % paperwidth  = 595bp
-%% paperheight  794.97 pt ≅ 792.0 bp  [794.96208 pt]
-%% paperwidth   597.23 pt = 595.0 bp  {597.22530 pt]
-%+  left        = 20mm,
-%+  bottom      = 56pt,
-%=  columnsep   = 5mm,
-%+		heightrounded,
-%+		noheadfoot,
-%= 		centering,
-%+		nomarginpar,
-%=  	twocolumn]
-%=		{geometry}
-
 \columnseprule 0pt
 \usepackage[hang]{footmisc}
 \setlength{\footnotemargin}{.6em}
@@ -333,10 +316,10 @@
    \AtBeginDocument{\let\vdots\ori@vdots}
    \setmainfont[Ligatures=TeX]{TeX Gyre Termes}
    \setmathfont{TeX Gyre Termes Math}
-   \sisetup{
-     math-micro = \text{^^^^03bc},
-     text-micro = ^^^^03bc
-      }
+%   \sisetup{
+%     math-micro = \text{^^^^03bc},
+%     text-micro = ^^^^03bc
+%      }
  }
  {
   % Fonts: Times clones
