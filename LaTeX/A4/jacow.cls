@@ -15,18 +15,18 @@
 %%    http://www.latex-project.org/lppl.txt
 %% and version 1.3 or later is part of all distributions of
 %% LaTeX version 2005/12/01 or later.
-%% 
+%%
 %% This work has the LPPL maintenance status "maintained".
-%% 
+%%
 %% This Current Maintainer of this work is Volker RW Schaa.
-%% 
+%%
 %% This work consists of the following files
 %%    jacow.cls               this class file
-%%    JACoW_LaTeX_A4.tex      A4/letter templates to demonstrate the 
+%%    JACoW_LaTeX_A4.tex      A4/letter templates to demonstrate the
 %%    JACoW_LaTeX_Letter.tex  .. use and explain the various parameters
 %%                            .. and settings for a submission to
 %%                            .. a JACoW conference proceedings
-%%    JACoW_LaTeX_A4.pdf      template in format A4 and European 
+%%    JACoW_LaTeX_A4.pdf      template in format A4 and European
 %%                            settings (citation and hyphenation)
 %%    JACoW_LaTeX_Letter.pdf  template in format letter and American
 %%                            setting (citation and hyphenation)
@@ -41,7 +41,7 @@
 %%                             editors for the various platform
 %%                            dependent templates (LaTeX, Word on PC and
 %%                            Mac, ODF). The PDF is included in the template
-%% 
+%%
 %
 %  v0.1 to 1.3 : JAC2000.cls
 %  Special thanks to John Jowett and Michel Goossens from CERN and
@@ -109,12 +109,12 @@
 %                                                   Volker RW Schaa, 02 May 2014
 %
 % v1.96
-% - modification of bibatex style information. Since the JACoW template Feb-2016 
+% - modification of bibatex style information. Since the JACoW template Feb-2016
 %   the bibliography requires the IEEEtran style. Heine provided an adapted
 %   version using the required values of the template:
 %   + ieee biblatex style instead of numeric-compv
 %   + doi field is cleared for all entries
-%   + et al. is used when there are > 6 authors (maxnames=6). In that case, 
+%   + et al. is used when there are > 6 authors (maxnames=6). In that case,
 %     only the first author is mentioned (minnames=1)
 %   + url field is cleared for articles and inproceedings
 %   + giveninits=true reduces all given names to initials
@@ -146,7 +146,7 @@
 % v2.4
 % - version 2.3 did not work for XeTeX/LuaTeX, therefore font change using
 %   \def\UrlFont and switching the fontencoding to T1 (suggested by Ulrike Fischer)
-% - package amsmath included
+% - package amsmath included to provide
 %                                                  Volker RW Schaa, 01 Apr 2019
 %% v2.5
 % - flushend dropped the option keeplastbox, therefore removed from jacow package
@@ -166,14 +166,26 @@
 % - addded some biblatex macros to achieve closer JACoW reference formatting 
 %   than standard ieeetran 
 %                                                  Volker RW Schaa, 02 Feb 2022
+%% v2.8
+% - removes the (non)stretchability \bibitemsep{0pt} from tests (oversight in v2.7)
+% - introduced the page setting by geometry to JACoW paper size which wasn't 
+%   working in earlier version of jacow.cls due to the necessary offset using "pt". 
+%   With Zhichu Chen's suggestion of using "bp" instead of "pt", Ivan's JACoW utils 
+%   does not complain anymore, and the /Mediabox is correctly shown in Acrobat and 
+%   PitStop.
+%        paperheight  792.0 bp ≅ 794.97 pt [794.96208 pt]
+%        paperwidth   595.0 bp ≅ 597.23 pt [597.22530 pt]
+%   Currently I have not found where in a PDF it's defined 
+%   whether (media/crop box) values are "pt" or "bp".
+%                                       Zhichu Chen, Volker RW Schaa, 10 Jun 2022
 %
 %
-\def\fileversion{2.7}
-\def\filedate{2022/02/02}
-\def\docdate {2022/02/02}
+\def\fileversion{2.8}
+\def\filedate{2022/06/10}
+\def\docdate {2022/06/10}
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{jacow}[\filedate\space v\fileversion fixes for siunitx, stfloats, biblatex ref formatting] 
+\ProvidesClass{jacow}[\filedate\space v\fileversion\space ref formatting stretchability] 
 
 \typeout{------------------------------------------------------------------------}
 \typeout{LaTeX2e Class file for Accelerator Conference publication for LaTeX2e users}
@@ -255,19 +267,45 @@
 \RequirePackage{amsmath}
 \AtEndPreamble{\RequirePackage[autostyle]{csquotes}}
 
+%
+% Page layout:
+%
+% Zhichu's suggestion of using "bp instead of "pt"
+\RequirePackage[%
+		twocolumn,
+		columnsep  	= 5mm,
+		left        = 20mm,
+		bottom      = 56pt,
+		paperwidth 	= 595bp,  %% paperwidth   597.23 pt = 595.0 bp  {597.22530 pt]
+		textwidth  	= 170mm,
+		paperheight = 792bp,  %% paperheight  794.97 pt ≅ 792.0 bp  [794.96208 pt]
+		textheight  = 9.5in,
+		nomarginpar,
+		heightrounded,
+		noheadfoot,
+		centering]
+		{geometry}
 
 % Page layout:
-\RequirePackage[%
-  textwidth=170mm,
-  textheight=241mm,
-  heightrounded,
-  left=20mm,
-  bottom=56pt,
-  columnsep=5mm,
-  noheadfoot,
-  nomarginpar,
-  twocolumn]
-  {geometry}
+%\RequirePackage[%
+%=		textwidth   = 170mm,
+%~		textheight  = 9.5in,
+%~		textheight  = 241mm,
+%~		paperwidth  = 210mm,	
+%~		paperheight = 11in,
+%%  paperheight = 794.97pt,	% paperheight = 792bp
+%%  paperwidth  = 597.23pt,  % paperwidth  = 595bp
+%% paperheight  794.97 pt ≅ 792.0 bp  [794.96208 pt]
+%% paperwidth   597.23 pt = 595.0 bp  {597.22530 pt]
+%+  left        = 20mm,
+%+  bottom      = 56pt,
+%=  columnsep   = 5mm,
+%+		heightrounded,
+%+		noheadfoot,
+%= 		centering,
+%+		nomarginpar,
+%=  	twocolumn]
+%=		{geometry}
 
 \columnseprule 0pt
 \usepackage[hang]{footmisc}
@@ -288,7 +326,7 @@
  {}
  { \catcode`\^^^=9
  }
- 
+
 \ifboolexpr{bool{xetex} or bool{luatex}}
  { \let\ori@vdots\vdots
    \RequirePackage{unicode-math}
@@ -463,6 +501,8 @@
 % if BibLaTeX is used
 %
 % modify macros so the formatted output corresponds to JACoW's idea of IEEEtran
+    % set vertical distance between items
+   	\setlength\bibitemsep{3pt plus 1.5pt minus 0.5pt}
     % remove stretchability from biblatex URLs/DOIs
  	\toks0\expandafter{\biburlsetup}\edef\biburlsetup{\the\toks0 \Urlmuskip =0mu\relax}
  	% Removing period after DOI
@@ -546,10 +586,10 @@
   	\DeclareFieldFormat{issn}{%
   	    {\texttt{ISSN:#1}}%
   	}
-    % set vertical distance between items
-   	\setlength\bibitemsep{3pt plus 2.0pt minus 1.0pt}
-	\setlength\bibparsep{0pt}
-    \setlength\biblabelsep{5pt}
+  %
+%  \setlength\bibitemsep{0pt}
+  \setlength\bibparsep{0pt}
+  \setlength\biblabelsep{5pt}
   \ifjacowrefpage\preto\blx@bibliography{\clearpage}\fi
   \AtBeginBibliography{\small\clubpenalty4000\widowpenalty4000}%
  } % end if biblatex
