@@ -1,4 +1,4 @@
-%%
+%% v2.15
 %% This file has been developed as a common template for papers
 %% destined for electronic production for Accelerator Conferences
 %%
@@ -163,33 +163,61 @@
 %                                                  Volker RW Schaa, 11 Nov 2021
 %
 %% v2.7
-% - addded some biblatex macros to achieve closer JACoW reference formatting 
-%   than standard ieeetran 
+% - added some biblatex macros to achieve closer JACoW reference formatting
+%   than standard ieeetran
 %                                                  Volker RW Schaa, 02 Feb 2022
 %% v2.8
 % - removes the (non)stretchability \bibitemsep{0pt} from tests (oversight in v2.7)
-% - introduced the page setting by geometry to JACoW paper size which wasn't 
-%   working in earlier version of jacow.cls due to the necessary offset using "pt". 
-%   With Zhichu Chen's suggestion of using "bp" instead of "pt", Ivan's JACoW utils 
-%   does not complain anymore, and the /Mediabox is correctly shown in Acrobat and 
+% - introduced the page setting by geometry to JACoW paper size which wasn't
+%   working in earlier version of jacow.cls due to the necessary offset using "pt".
+%   With Zhichu Chen's suggestion of using "bp" instead of "pt", Ivan's JACoW utils
+%   does not complain anymore, and the /Mediabox is correctly shown in Acrobat and
 %   PitStop.
 %        paperheight  792.0 bp ≅ 794.97 pt [794.96208 pt]
 %        paperwidth   595.0 bp ≅ 597.23 pt [597.22530 pt]
-%   Currently I have not found where in a PDF it's defined 
+%   Currently I have not found where in a PDF it's defined
 %   whether (media/crop box) values are "pt" or "bp".
 %                                       Zhichu Chen, Volker RW Schaa, 10 Jun 2022
 %
 %% v2.9
-% - remove the math-micro option from siunitx as it was depricated.
+% - remove the math-micro option from siunitx as it was deprecated.
 %                                                    Volker RW Schaa, 12 Jun 2022
 %
+%% v2.10
+% - added Zhichu's switch between version of siunitx (older than 2021-05-17}.
+%                                       Zhichu Chen, Volker RW Schaa, 15 Jun 2022
 %
-\def\fileversion{2.9}
-\def\filedate{2022/06/12}
-\def\docdate {2022/06/12}
+%% v2.11
+% - remove the (empty) package textcase and substituted it by
+%   \let\MakeTextUppercase\MakeUppercase
+%                                                    Volker RW Schaa, 17 Jul 2022
+%% v2.12
+% - the new changes to LaTeX3 (2022-06-01) break the old "\@nonchangecase" command
+%	\AddToNoCaseChangeList{command} added
+%                                     Ulrike Fischer, Volker RW Schaa, 04 Aug 2022
+%
+%% v2.13
+% - placement of DOI changed: if it fits on the line OK, otherwise use a new line
+% - period/fullstop placed in front of DOI
+%                                                        Zhichu Chen, 05 Aug 2022
+%
+%% v2.14
+% - `lineno` with "minted" are not supported
+% - place a "\\" rather than \par for linebreak in the definition of \placedoi to
+%   ǵet the vertical spacing right
+%                                                        Zhichu Chen, 06 Aug 2022
+%% v2.15
+% - all intermediate changes combined in this version
+% - check for \AddToNoCaseChangeList instead of \IfFormatAtLeastTF{2022/06/01}
+%
+%                                       Zhichu Chen, Volker RW Schaa, 09 Aug 2022
+%
+\def\fileversion{2.15}
+\def\filedate{2022/08/09}
+\def\docdate {2022/08/09}
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{jacow}[\filedate\space v\fileversion\space ref formatting stretchability] 
+\ProvidesClass{jacow}[\filedate\space v\fileversion]
 
 \typeout{------------------------------------------------------------------------}
 \typeout{LaTeX2e Class file for Accelerator Conference publication for LaTeX2e users}
@@ -233,37 +261,73 @@
 \RequirePackage{fix-cm}
 \LoadClass[10pt,twocolumn]{article}
 \RequirePackage[]{flushend} %% modified 2.5
+%
+% a lot of authors love to use `minted` to typeset codes which also loads `lineno`
+% `flushend` does not balance when `lineno` is also loaded,
+% let's pretend it's already loaded
+% this will break linebreaks (not as serious as it sounds) for `minted` but we don't care
+\@namedef{ver@lineno.sty}{9999/12/31}
+\@namedef{opt@lineno.sty}{}
 % Tools:
 \RequirePackage{etoolbox}
 \RequirePackage{iftex}
-\RequirePackage{textcase}
 %
-%Add thanks to the list of "\@nonchangecase"-commands from textcase:
-\def\@uclcnotmath#1#2#3#4{\begingroup
-      #1%
-      \def\({$}\let\)\(%
-      \def\NoCaseChange##1{\noexpand\NoCaseChange{\noexpand##1}}%
-      \@nonchangecase\label
-      \@nonchangecase\ref
-      \@nonchangecase\ensuremath
-      \@nonchangecase\thanks %new
-      \@nonchangecase\si %new
-      \@nonchangecase\SI %new
-      \def\cite##1##{\toks@{\noexpand\cite##1}\@citex}%
-      \def\@citex##1{\NoCaseChange{\the\toks@{##1}}}%
-      \def\reserved@a##1##2{\let#2\reserved@a}%
-      \expandafter\reserved@a\@uclclist\reserved@b{\reserved@b\@gobble}%
-      \protected@edef\reserved@a{\endgroup
-          \noexpand\@skipmath#3#4$\valign$}%
-      \reserved@a}
+% Ulrike's suggestion to the UPPERCASING problem after LaTeX update 2022-06-01 
+% or is it even 2022-06-30 ?? => check of 2022-06-01 changed to definition of
+% \AddToNoCaseChangeList which came obviously later 
 %
+%\providecommand\IfFormatAtLeastTF{\@ifl@t@r\fmtversion}
+%\IfFormatAtLeastTF{2022/06/01}%
+\ifx\AddToNoCaseChangeList\@undefined
+% old
+	%Add thanks to the list of "\@nonchangecase"-commands from textcase:
+	\RequirePackage{textcase}
+	\def\@uclcnotmath#1#2#3#4{\begingroup
+		  #1%
+		  \def\({$}\let\)\(%
+		  \def\NoCaseChange##1{\noexpand\NoCaseChange{\noexpand##1}}%
+		  \@nonchangecase\label
+		  \@nonchangecase\ref
+		  \@nonchangecase\ensuremath
+		  \@nonchangecase\thanks %new
+		  \@nonchangecase\si %new
+		  \def\SI##1##2{\NoCaseChange{\SI{##1}{##2}}} % ugly patch
+		  \def\cite##1##{\toks@{\noexpand\cite##1}\@citex}%
+		  \def\@citex##1{\NoCaseChange{\the\toks@{##1}}}%
+		  \def\reserved@a##1##2{\let#2\reserved@a}%
+		  \expandafter\reserved@a\@uclclist\reserved@b{\reserved@b\@gobble}%
+		  \protected@edef\reserved@a{\endgroup
+			  \noexpand\@skipmath#3#4$\valign$}%
+		  \reserved@a}
+\else
+	\let\MakeTextUppercase\MakeUppercase
+	\AddToNoCaseChangeList{\thanks}
+	\AddToNoCaseChangeList{\label}
+	\AddToNoCaseChangeList{\ref}
+	\AddToNoCaseChangeList{\ensuremath}
+	\AddToNoCaseChangeList{\si}
+	\AddToNoCaseChangeList{\SI}
+	\AddToNoCaseChangeList{\qty}
+	\AddToNoCaseChangeList{\unit}
+\fi
 % Option "binary-units" has been removed from (siunitx)
 % Option "detect-mode" has been deprecated in this (siunitx) release: v3.0.32
 %        Use "mode=match" as a replacement.
 % Option "detect-weight" has been deprecated in this (siunitx) release: v3.0.32
 %        Use "reset-text-series=false, text-series-to-math=true" as a replacement.
 %
-\RequirePackage[mode=match, reset-text-series=false, text-series-to-math=true]{siunitx}
+%\RequirePackage[mode=match, reset-text-series=false, text-series-to-math=true]{siunitx}
+\RequirePackage{siunitx}
+\@ifpackagelater{siunitx}{2021-05-17}%
+  {\PackageInfo{siunitx}{%
+  Package newer than 2021-05-17,\MessageBreak
+  loading current settings.}%
+   \sisetup{mode=match, reset-text-series=false, text-series-to-math=true}}% copied from jacow.cls version 2.7
+  {\PackageInfo{siunitx}{%
+  Package older than 2021-05-17,\MessageBreak
+  loading old settings.}%
+   \sisetup{detect-mode,detect-weight, binary-units=true}}%                % copied from jacow.cls version 2.4
+
 \RequirePackage{graphicx}
 \RequirePackage{booktabs}
 \RequirePackage[figureposition=bottom,tableposition=top,skip=5pt]{caption}
@@ -458,6 +522,36 @@
   {\subsection*{Abstract}}
   {\par}
 }
+
+\newbox\doi@box
+\newskip\lastlinewidth
+\newskip\doiavailablewidth
+\newcount \saveprevgraf
+\def\placedoi#1{\mbox{}%
+\lastlinewidth=\z@
+\ifhmode
+  \predisplaypenalty10000\relax \postdisplaypenalty10000\relax
+  \abovedisplayskip-\baselineskip
+  \belowdisplayskip-\baselineskip
+  \abovedisplayshortskip\abovedisplayskip
+  \belowdisplayshortskip\belowdisplayskip
+  $$
+      \global \lastlinewidth=\dimexpr \predisplaysize -2em \relax
+  $$
+\saveprevgraf\prevgraf
+\advance\saveprevgraf by -3
+\advance\saveprevgraf by -1
+\prevgraf\saveprevgraf
+\fi
+\noindent\kern\dimexpr\lastlinewidth -\leftmargin\relax
+\doiavailablewidth=\dimexpr \hsize-\lastlinewidth \relax
+\setbox\doi@box=\hbox{#1}%
+\ifdim\doiavailablewidth<\wd\doi@box
+\\
+\fi
+\unhbox\doi@box
+}
+
 \ifboolexpr{bool{jacowbiblatex}}
 %2.00 {\RequirePackage[style=ieee,sorting=none,giveninits=true,doi=false,maxnames=6,minnames=1]{biblatex}
 %2.1 {\RequirePackage[style=ieee,sorting=none,giveninits=true,maxnames=6,minnames=1]{biblatex}
@@ -475,7 +569,7 @@
   % Drop urls for article and inproceedings entries
 %2.7
 % check https://tex.stackexchange.com/questions/6743/biblatex-changing-the-order-of-entries
-%       https://tex.stackexchange.com/questions/12806/guidelines-for-customizing-biblatex-styles/13076#13076  
+%       https://tex.stackexchange.com/questions/12806/guidelines-for-customizing-biblatex-styles/13076#13076
 %       https://tex.stackexchange.com/questions/10203/biblatex-putting-thin-spaces-between-initials
 %       https://tex.stackexchange.com/questions/560346/how-to-suppress-annotation-field-from-bbl-file-in-biblatex
 %       https://tex.stackexchange.com/questions/496995/advanced-introduction-to-biblatex-coding-guidelines-for-database
@@ -494,7 +588,7 @@
   	\DeclareFieldFormat{doi}{%
  	  \ifhyperref
  	    {\href{https://doi.org/#1}{\nolinkurl{#1}}}
- 	    {\nolinkurl{doi:#1}}%
+ 	    {\placedoi{\nolinkurl{doi:#1}}}%
  	}
 	%
 	% make sure that there is no break between initial and lastname
@@ -522,14 +616,14 @@
  	\renewbibmacro*{volume+number+eid}{%
  	  \printfield{volume}%
  	  \newunit
- 	  \printfield{number}%    
+ 	  \printfield{number}%
  	  \newunit
  	  \printfield{eid}%
  	}
  	%
  	% Clean up the bibtex rather than editing it for extensive JACoW BibTeX records
  	%
- 	\AtEveryBibitem{% 
+ 	\AtEveryBibitem{%
  	 \clearlist{address}
  	 \clearfield{date}
  	 \clearfield{eprint}
@@ -538,7 +632,7 @@
  	 %
  	 % use/print "note" if "booktitle" is not given: example "data for this conference"
      %
- 	 \iffieldundef{booktitle}{}{\clearfield{note}} 
+ 	 \iffieldundef{booktitle}{}{\clearfield{note}}
  	 \clearlist{location}
  	 \clearfield{month}
  	 \clearfield{series}
@@ -551,7 +645,7 @@
 	% print url if no doi
 	%
  	\renewbibmacro*{doi+eprint+url}{%
- 	    \printfield{doi}%
+ 	    \addperiod\printfield{doi}%
  	    \newunit\newblock%
  	    \iftoggle{bbx:eprint}{%
  	        \usebibmacro{eprint}%
