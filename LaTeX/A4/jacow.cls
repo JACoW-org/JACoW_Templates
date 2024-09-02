@@ -1,4 +1,4 @@
-%% v2.98g
+%% v2.98j
 %% This file has been developed as a common template for papers
 %% destined for electronic production for Accelerator Conferences
 %%
@@ -240,10 +240,26 @@
 %% v2.98g
 % - \DeclareFieldFormat now included for booktitle
 %                                                        Zhichu Chen, 18 Aug 2024
+% 
+%% v2.98h
+% - @inproceedings: this version distinguishes between "eventdate" (conferences date) and 
+%                   "date/year/month" (publication date) for JACoW standard
+%   if "eventdate" is present, "date…" is ignored; 
+%   …, venue [,eventdate | if defined] [,eid | if doi undefined] [,pages | if defined] [,date | ⏎
+%   if eventdate undefined]. [doi | if defined] …
+%                             Jan Chrin, Zhichu Chen, Volker RW Schaa, 19 Aug 2024
+% 
+%% v2.98j
+% - "shortjournal" introduced which has »Journal Name« abbreviated as to the official 
+%			version used by publishers 
+%           (e.g. https://woodward.library.ubc.ca/woodward/research-help/journal-abbreviations/)
+% - field formatting unified/redefined for "article, periodical, inproceedings" (volume, 
+%		issue, number, journaltitle, shortjournal, maintitle, booktitle)
+%                                       Zhichu Chen, Volker RW Schaa,  20 Aug 2024
 
-\def\fileversion{2.98g}
-\def\filedate{2024/08/18}
-\def\docdate {2024/08/18}
+\def\fileversion{2.98j}
+\def\filedate{2024/08/20}
+\def\docdate {2024/08/20}
 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{jacow}[\filedate\space v\fileversion]
