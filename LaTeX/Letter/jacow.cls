@@ -1,4 +1,4 @@
-%% v2.15
+%% v2.98g
 %% This file has been developed as a common template for papers
 %% destined for electronic production for Accelerator Conferences
 %%
@@ -109,7 +109,7 @@
 %                                                   Volker RW Schaa, 02 May 2014
 %
 % v1.96
-% - modification of bibatex style information. Since the JACoW template Feb-2016
+% - modification of bilatex style information. Since the JACoW template Feb-2016
 %   the bibliography requires the IEEEtran style. Heine provided an adapted
 %   version using the required values of the template:
 %   + ieee biblatex style instead of numeric-compv
@@ -140,7 +140,7 @@
 %                                                  Volker RW Schaa, 23 Feb 2018
 %
 % v2.3
-% - font for tt switched to newtxtt with option zerostyle=d (dotted 0)
+% - font for ttfamily switched to newtxtt with option zerostyle=d (dotted 0)
 %                                                  Volker RW Schaa, 15 Jan 2019
 %
 % v2.4
@@ -207,14 +207,43 @@
 %   ǵet the vertical spacing right
 %                                                        Zhichu Chen, 06 Aug 2022
 %% v2.15
-% - all intermediate changes combined in this version
+% - all intermediate changes combined in this version (during 2022's conferences
+%	a number of changed class files were distributed carying parts of v2.10-.14)
 % - check for \AddToNoCaseChangeList instead of \IfFormatAtLeastTF{2022/06/01}
-%
 %                                       Zhichu Chen, Volker RW Schaa, 09 Aug 2022
+%% v2.16
 %
-\def\fileversion{2.15}
-\def\filedate{2022/08/09}
-\def\docdate {2022/08/09}
+% - subsubsection with small vertical distance
+%                                                    Volker RW Schaa, 02 Jan 2023
+%% v2.17
+% - first try for DOI links (but URL links should not get active links)
+% - package hyperref added with link color & page view definitions
+%
+%                                                    Volker RW Schaa, 29 Jan 2023
+%% v2.18
+% - remove changes of v2.17 for DOI links
+% - changed tightness of floats in surrounding text
+%
+%                                                    Volker RW Schaa, 15 Oct 2023
+%% v2.98e
+% - bug fix for BibLaTeX option (\AtBeginBibliography not recognized outside)
+% - options for main font now set in \defaultfontfeatures
+% - v. 2.98 ff. introduced bookmarks due to defaults of hyperref, this is now switch off
+%                                       Zhichu Chen, Volker RW Schaa, 16 Aug 2024
+%
+%% v2.98f
+% - redefinition of @inproceedings
+% - date macro only shows month and year now from "eventdate"/"date"
+% - hyperref workaround for not correctly escaped colon
+% - add a macro \doi to be used inside "thebibliography" environment
+%                                                        Zhichu Chen, 17 Aug 2024
+%% v2.98g
+% - \DeclareFieldFormat now included for booktitle
+%                                                        Zhichu Chen, 18 Aug 2024
+
+\def\fileversion{2.98g}
+\def\filedate{2024/08/18}
+\def\docdate {2024/08/18}
 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{jacow}[\filedate\space v\fileversion]
@@ -272,9 +301,9 @@
 \RequirePackage{etoolbox}
 \RequirePackage{iftex}
 %
-% Ulrike's suggestion to the UPPERCASING problem after LaTeX update 2022-06-01 
+% Ulrike's suggestion to the UPPERCASING problem after LaTeX update 2022-06-01
 % or is it even 2022-06-30 ?? => check of 2022-06-01 changed to definition of
-% \AddToNoCaseChangeList which came obviously later 
+% \AddToNoCaseChangeList which came obviously later
 %
 %\providecommand\IfFormatAtLeastTF{\@ifl@t@r\fmtversion}
 %\IfFormatAtLeastTF{2022/06/01}%
@@ -335,10 +364,11 @@
 \RequirePackage{amsmath}
 \AtEndPreamble{\RequirePackage[autostyle]{csquotes}}
 
+
 %
 % Page layout:
 %
-% Zhichu's suggestion of using "bp instead of "pt"
+% Zhichu's suggestion of using "bp instead of "pt" solved the problem of v1.97 (changes removed)
 \RequirePackage[%
 		twocolumn,
 		columnsep  	= 5mm,
@@ -376,8 +406,9 @@
 
 \ifboolexpr{bool{xetex} or bool{luatex}}
  { \let\ori@vdots\vdots
-   \RequirePackage{unicode-math}
+   \RequirePackage[pdfstartview=Fit, pdfpagemode=UseNone,bookmarks=false,unicode=true, colorlinks, linkcolor={black}, citecolor={black}, urlcolor={black}]{hyperref}
    \AtBeginDocument{\let\vdots\ori@vdots}
+   \RequirePackage{unicode-math}
    \setmainfont[Ligatures=TeX]{TeX Gyre Termes}
    \setmathfont{TeX Gyre Termes Math}
 %   \sisetup{
@@ -392,10 +423,34 @@
   \RequirePackage{lmodern}
   \RequirePackage{tgtermes}
   \RequirePackage{newtxmath}
+  \RequirePackage[pdfstartview=Fit, pdfpagemode=UseNone,bookmarks=false, colorlinks, linkcolor={black}, citecolor={black}, urlcolor={black}]{hyperref}
   \input{glyphtounicode}
   \pdfgentounicode=1
-%  \RequirePackage{cmap}
  }
+
+
+\ExplSyntaxOn
+\cs_set_eq:NN \__jacow_saved_url:n \url@
+
+\regex_new:N \__jacow_doi_regex
+\regex_set:Nn \__jacow_doi_regex {^10\.\d+/}
+
+\cs_if_exist:NTF 	\regex_match:NnTF {
+	% detect if url is a plain doi or not
+	\RenewDocumentCommand{\url@}{m}{
+		\tl_set:Nn \l_tmpa_tl {#1}
+		\tl_remove_once:Nn \l_tmpa_tl  {http://doi.org/}
+		\tl_remove_once:Nn \l_tmpa_tl  {https://doi.org/}
+		\regex_match:NVTF  \__jacow_doi_regex  \l_tmpa_tl {
+			\__jacow_saved_url:n {#1}
+		} {
+			\nolinkurl{#1}
+		}
+	}
+} {
+	\let\url\nolinkurl
+}
+\ExplSyntaxOff
 
 \RequirePackage{microtype}
 
@@ -407,7 +462,7 @@
 \newenvironment{Description}{\begin{description}[nosep]}{\end{description}}
 
 
-%Floatparameter:
+%Floatparameters:
 \renewcommand{\topfraction}{.95}
 \renewcommand{\bottomfraction}{.95}
 \renewcommand{\textfraction}{0.1}
@@ -433,7 +488,7 @@
 \renewcommand\subsubsection
  {%
   \@startsection{subsubsection}{3}{\parindent}
-  {2.5ex plus .7ex minus .17ex}{-1em}
+  {1.5ex plus .5ex minus .25ex}{-1em}
   {\normalfont\normalsize\bfseries}%
  }
 
@@ -452,6 +507,13 @@
  }
 
 \setcounter{secnumdepth}{0}
+
+% redefine spacing around figure and other floats
+%  Default sizes
+%  \textfloatsep: 1.7\baselineskip plus 0.2\baselineskip minus 0.5\baselineskip
+%  \intextsep: \baselineskip plus 0.2\baselineskip minus 0.2\baselineskip
+\setlength{\textfloatsep}{12pt plus 2.4pt minus 2.4pt}
+\setlength{\intextsep}{12pt plus 2.4pt minus 2.4pt}
 
 % This definition of \maketitle taken from article.sty, and has been
 % somewhat modified.
@@ -475,7 +537,6 @@
 
 \newlength\titleblockstartskip
 \setlength\titleblockstartskip{3pt}
-
 
 \newlength\titleblockmiddleskip
 \setlength\titleblockmiddleskip{1em}
@@ -552,11 +613,248 @@
 \unhbox\doi@box
 }
 
+\ExplSyntaxOn
 \ifboolexpr{bool{jacowbiblatex}}
 %2.00 {\RequirePackage[style=ieee,sorting=none,giveninits=true,doi=false,maxnames=6,minnames=1]{biblatex}
 %2.1 {\RequirePackage[style=ieee,sorting=none,giveninits=true,maxnames=6,minnames=1]{biblatex}
 %2.2
   {\RequirePackage[bibstyle=ieee,citestyle=numeric-comp,dashed=false,sorting=none,giveninits=true,maxnames=6,minnames=1]{biblatex}
+  % enforce csquotes to use american style, even if british is set
+  \AtBeginBibliography{\ifundef{\setquotestyle}{}{\setquotestyle{american}}}
+  % copy content of issue to number if number is not set
+  % TODO? ask if number issue should be cleared, otherwhise it's used withing issue+date again.
+  \DeclareSourcemap{
+	  \maps[datatype=bibtex]{
+		  \map{
+		  \step[fieldsource=issue]
+		  \step[fieldset=number, origfieldval]
+		  }
+	  }
+  }
+
+  \NewDocumentCommand\printfirst{omo} %«
+    {
+      \clist_map_inline:nn {#2} %«
+        {
+          \iffieldundef{##1}
+            {}
+            {
+              \IfValueT{#1}{\printtext{#1}}
+              \printfield{##1}
+              \IfValueT{#3}{\printtext{#3}}
+              \clist_map_break:
+            } %»
+        } %»
+    } %»
+
+  \newrobustcmd*{\mkdaterangejacow}[1] %«
+    {
+      \iffieldundef{#1year}
+        %%%% year not defined
+        {
+          \iffieldundef{#1endyear}
+            %%% endyear not defined
+            {}
+            %%% endyear defined, let's pretend year==endyear
+            {
+              \iffieldundef{#1month}
+                %% month not defined
+                {
+                  \iffieldundef{#1endmonth}
+                    % endmonth not defined
+                    {\printfield{#1endyear}}
+                    % endmonth defined, let's pretend month==endmonth
+                    {\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1endyear}} %»
+                }
+                %% month defined
+                {
+                  \iffieldundef{#1endmonth}
+                    % endmonth not defined, let's pretend month==endmonth
+                    {\mkbibmonth{\thefield{#1month}}\space\printfield{#1endyear}}
+                    % endmonth defined
+                    {
+                      \iffieldsequal{#1month}{#1endmonth}
+                        {\mkbibmonth{\thefield{#1month}}\space\printfield{#1endyear}}
+                        {\mkbibmonth{\thefield{#1month}}--\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1endyear}} %»
+                    } %»
+                } %»
+            } %»
+        }
+        %%%% year defined
+        {
+          \iffieldundef{#1endyear}
+            %%% endyear not defined, let's pretend year==endyear
+            {
+              \iffieldundef{#1month}
+                %% month not defined
+                {
+                  \iffieldundef{#1endmonth}
+                    % endmonth not defined
+                    {\printfield{#1year}}
+                    % endmonth defined, let's pretend month==endmonth
+                    {\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1year}} %»
+                }
+                %% month defined
+                {
+                  \iffieldundef{#1endmonth}
+                    % endmonth not defined, let's pretend month==endmonth
+                    {\mkbibmonth{\thefield{#1month}}\space\printfield{#1year}}
+                    % endmonth defined
+                    {
+                      \iffieldsequal{#1month}{#1endmonth}
+                        {\mkbibmonth{\thefield{#1month}}\space\printfield{#1year}}
+                        {\mkbibmonth{\thefield{#1month}}--\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1year}} %»
+                    } %»
+                } %»
+            }
+            %%% endyear defined
+            {
+              \iffieldsequal{#1year}{#1endyear}
+                {
+                  \iffieldundef{#1month}
+                    %% month not defined
+                    {
+                      \iffieldundef{#1endmonth}
+                        % endmonth not defined
+                        {\printfield{#1year}}
+                        % endmonth defined, let's pretend month==endmonth
+                        {\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1year}} %»
+                    }
+                    %% month defined
+                    {
+                      \iffieldundef{#1endmonth}
+                        % endmonth not defined, let's pretend month==endmonth
+                        {\mkbibmonth{\thefield{#1month}}\space\printfield{#1year}}
+                        % endmonth defined
+                        {
+                          \iffieldsequal{#1month}{#1endmonth}
+                            {\mkbibmonth{\thefield{#1month}}\space\printfield{#1year}}
+                            {\mkbibmonth{\thefield{#1month}}--\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1year}} %»
+                        } %»
+                    } %»
+                }
+                {
+                  \iffieldundef{#1month}
+                    %% month not defined
+                    {
+                      \printfield{#1year}--\printfield{#1endyear}
+                    }
+                    %% month defined
+                    {
+                      \iffieldundef{#1endmonth}
+                        % endmonth not defined
+                        {
+                          \printfield{#1year}--\printfield{#1endyear}
+                        }
+                        % endmonth defined
+                        {
+                          \mkbibmonth{\thefield{#1month}}\space\printfield{#1year}--\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1endyear}
+                        } %»
+                    } %»
+                } %»
+            } %»
+        } %»
+    }
+  \protected\csedef{blx@imc@printdate}     {\noexpand\csuse{mkdaterangejacow}{}}
+  \protected\csedef{blx@imc@printeventdate}{\noexpand\csuse{mkdaterangejacow}{event}}
+
+
+  \newbibmacro*{eventdate/date/mon.year} %«
+    {
+      \iffieldundef{eventyear}
+        {
+          \usebibmacro{date}%
+        }
+        {
+          \usebibmacro{eventdate}
+        }%»
+    } %»
+  \renewbibmacro*{date}     {\printdate}
+  \newbibmacro*  {eventdate}{\printeventdate}
+
+  \newbibmacro*{journal-iso4}%«
+    {%
+      \iffieldundef{shortjournal}
+        {%
+          \iffieldundef{journaltitle}
+            {}
+            {%
+              \printfield{journaltitle}%
+            }%»
+          \iffieldundef{journalsubtitle}
+            {}
+            {%
+              \setunit{\subtitlepunct}%
+              \printfield{journalsubtitle}%
+            }%»
+        }
+        {%
+          \printfield{shortjournal}
+        }%»
+    }
+
+  \DeclareFieldFormat[article,periodical]{volume}{\bibstring{volume}\nobreakspace#1}
+  \DeclareFieldFormat[article,periodical]{issue}{\bibstring{number}\nobreakspace#1}
+  \DeclareFieldFormat[article,periodical]{number}{\bibstring{number}\nobreakspace#1}
+  \DeclareFieldFormat[article,periodical]{journaltitle}{\mkbibemph{#1\isdot}}
+  \DeclareFieldFormat[article,periodical]{shortjournal}{\mkbibemph{#1\isdot}}
+  \DeclareBibliographyDriver{article} %«
+    {
+      \usebibmacro{bibindex}
+      \usebibmacro{begentry} %«
+        \usebibmacro{author}
+        \newunit\newblock
+        \usebibmacro{title}
+        \newunit\newblock
+        \usebibmacro{journal-iso4}
+        \newunit\newblock
+        \printfield{volume}
+        \newunit
+        \printfirst{issue,number}
+        \newunit
+        \printfield{pages}
+        \newunit\newblock
+        \printdate
+        \setunit{\addperiod\addspace}\newblock
+        \printfirst{doi,eprint,url} %»
+      \usebibmacro{finentry}
+    } %»
+
+
+
+\DeclareFieldFormat[inproceedings]{maintitle}{\bibstring{in}\addspace\mkbibemph{#1}}
+\DeclareFieldFormat[inproceedings]{booktitle}{\bibstring{in}\addspace\mkbibemph{#1}}
+  \DeclareBibliographyDriver{inproceedings} %«
+    {
+      \usebibmacro{bibindex}
+      \usebibmacro{begentry} %«
+        \usebibmacro{author}
+        \setunit{\labelnamepunct}\newblock
+        \usebibmacro{title}
+        \newunit
+        \printfirst{maintitle,booktitle}
+        \newunit\newblock
+        \printfield{venue}
+        \newunit
+        \iffieldundef{eventdate}
+        {}
+        {\usebibmacro{eventdate}}
+        \newunit\newblock
+        \iffieldundef{doi}
+        {\printfirst{eid,paper}}
+        {}
+        \newunit
+        \printfield{pages}
+        \newunit
+        \iffieldundef{eventdate}
+        {\usebibmacro{date}}
+        {}
+        \setunit{\addperiod\addspace}\newblock
+        \printfirst{doi,eprint,url} %»
+      \usebibmacro{finentry}
+    } %»
+
+
   \renewbibmacro*{url+urldate}{%
     \iffieldundef{url}
      {}
@@ -565,8 +863,9 @@
   \DeclareFieldFormat{url}{\url{#1}}
   \DeclareFieldFormat{eprint}{#1}
 %% when to activate this? Paper format acus/letter
-%  \DefineBibliographyExtras{american}{\stdpunctuation} % mod
-  % Drop urls for article and inproceedings entries
+\DefineBibliographyExtras{english}{\stdpunctuation}
+\DefineBibliographyExtras{american}{\stdpunctuation} % mod
+% Drop urls for article and inproceedings entries
 %2.7
 % check https://tex.stackexchange.com/questions/6743/biblatex-changing-the-order-of-entries
 %       https://tex.stackexchange.com/questions/12806/guidelines-for-customizing-biblatex-styles/13076#13076
@@ -587,8 +886,8 @@
   	% format doi: as part of the link using the same font
   	\DeclareFieldFormat{doi}{%
  	  \ifhyperref
- 	    {\href{https://doi.org/#1}{\nolinkurl{#1}}}
- 	    {\placedoi{\nolinkurl{doi:#1}}}%
+		{\placedoi{\href{https\c_colon_str//doi.org/#1}{\nolinkurl{doi:#1}}}}%
+		{\placedoi{\nolinkurl{doi:#1}}}%
  	}
 	%
 	% make sure that there is no break between initial and lastname
@@ -609,8 +908,11 @@
  	    \printeventdate%
  	    \newunit%
  	}
+ 	\DeclareFieldFormat{paper}{%
+        {paper\addspace#1}%within an own bbx one would define this as a bibstring
+ 	}
   	\DeclareFieldFormat{eid}{%
-  	    {paper #1}%
+  	    {paper\addspace#1}%
   	}
  	%
  	\renewbibmacro*{volume+number+eid}{%
@@ -618,14 +920,29 @@
  	  \newunit
  	  \printfield{number}%
  	  \newunit
- 	  \printfield{eid}%
- 	}
+ 	  % only use eid/paper if doi is not set
+ 	  \iffieldundef{doi}{%
+ 	  \iffieldundef{eid}{%
+  		  \printfield{paper}%
+ 	  }{%
+ 		  \printfield{eid}%
+ 	 }%
+ 	 }{}
+ 	}%
+
+
+	\renewbibmacro*{issue+date}{%
+        \usebibmacro{date}%
+         \newunit
+}
+
  	%
  	% Clean up the bibtex rather than editing it for extensive JACoW BibTeX records
  	%
  	\AtEveryBibitem{%
  	 \clearlist{address}
  	 \clearfield{date}
+	 \clearlist{language}
  	 \clearfield{eprint}
  	 \clearfield{isbn}
  	 \clearfield{issn}
@@ -637,7 +954,7 @@
  	 \clearfield{month}
  	 \clearfield{series}
  	 \ifentrytype{book}{}{% Remove publisher and editor except for books
- 	  \clearlist{publisher}
+ 	  \clearfield{publisher}
  	  \clearname{editor}
  	 }
  	}
@@ -647,13 +964,13 @@
  	\renewbibmacro*{doi+eprint+url}{%
  	    \addperiod\printfield{doi}%
  	    \newunit\newblock%
- 	    \iftoggle{bbx:eprint}{%
- 	        \usebibmacro{eprint}%
- 	    }{}%
- 	    \newunit\newblock%
- 	    \iffieldundef{doi}{%
- 	        \usebibmacro{url+urldate}}%
- 	        {}%
+		\iffieldundef{doi}{%
+			\iftoggle{bbx:eprint}{%
+				\usebibmacro{eprint}%
+			}{}%
+			\newunit\newblock%
+			\usebibmacro{url+urldate}%
+		}{}%
  	}
  	% format ISSN like URLs
   	\DeclareFieldFormat{issn}{%
@@ -669,12 +986,24 @@
   \setlength\biblabelsep{5pt}
   \ifjacowrefpage\preto\blx@bibliography{\clearpage}\fi
   \AtBeginBibliography{\small\clubpenalty4000\widowpenalty4000}%
+  %overwrite page range check in bibliography
+  \AtBeginBibliography{
+  	\protected\long\def\blx@mkpageprefix#1[#2]#3{%
+  		\ifnumeral{#3}
+  		{\bibstring{#1}\ppspace}
+  		{\ifnumerals{#3}
+  			{\bibstring{#1s}\ppspace}
+  			{\bibstring{#1}\ppspace\def\pno{\bibstring{#1}}%
+  				\def\ppno{\bibstring{#1s}}}}%
+  		\blx@mkpageprefix@i[{#2}]{#3}}
+  }
  } % end if biblatex
  %
  {\RequirePackage{cite}
   % Redefine to use smaller fonts
   \def\thebibliography#1{\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}%
   \ifjacowrefpage\clearpage\fi
+  \def\doi##1{\placedoi{\href{https\c_colon_str//doi.org/##1}{\nolinkurl{doi:##1}}}}
   \section*{REFERENCES\@mkboth
   {REFERENCES}{REFERENCES}}\small\list
   {[\arabic{enumi}]}{\settowidth\labelwidth{[#1]}\leftmargin\labelwidth
@@ -685,6 +1014,9 @@
     \sfcode`\.=1000\relax}
    \let\endthebibliography=\endlist
   }
+
+
+\ExplSyntaxOff
 
 
 %\sloppy
@@ -732,5 +1064,8 @@
       \@whilesw\if@fcolmade \fi{\@outputpage\@startdblcolumn}%
     \endgroup
   \fi}
+
+\tracinglostchars=3% create error message if characters are missing
+% Maybe it's a bad idea as there are some pgfplots/tikz packages who are not aware of that and create those messages … but for final editing it's necessary to check
 
 \endinput
