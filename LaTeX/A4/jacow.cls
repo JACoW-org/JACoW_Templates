@@ -888,6 +888,7 @@
 %       https://tex.stackexchange.com/questions/10203/biblatex-putting-thin-spaces-between-initials
 %       https://tex.stackexchange.com/questions/560346/how-to-suppress-annotation-field-from-bbl-file-in-biblatex
 %       https://tex.stackexchange.com/questions/496995/advanced-introduction-to-biblatex-coding-guidelines-for-database
+%       https://tex.stackexchange.com/questions/31616/how-to-use-shortjournal-with-biblatex-and-biblatex-chem																			
 %-------------------------------------
 %
 % if BibLaTeX is used
@@ -988,6 +989,24 @@
 			\usebibmacro{url+urldate}%
 		}{}%
  	}
+	%
+  % Use shortjournal if available, otherwise journaltitle
+  %
+  \renewbibmacro*{journal}{%
+    \iffieldundef{shortjournal}{%
+      \iffieldundef{journaltitle}
+        {}
+        {%
+          \printtext[journaltitle]
+            {%
+              \printfield[titlecase]{journaltitle}%
+              \setunit{\subtitlepunct}%
+              \printfield[titlecase]{journalsubtitle}%
+            }%
+        }%
+    }
+    {\printtext[journaltitle]{\printfield[titlecase]{shortjournal}}}%
+  }
  	% format ISSN like URLs
   	\DeclareFieldFormat{issn}{%
   	    {\texttt{ISSN:#1}}%
