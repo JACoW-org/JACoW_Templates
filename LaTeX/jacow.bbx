@@ -1,3 +1,57 @@
+%% This file has been developed as a common template for papers
+%% destined for electronic production for Accelerator Conferences
+%% 
+%% See the JACoW website for more information
+%% 
+%%       http://jacow.org/
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either
+%% version 1.3c of this license or (at your option) any later
+%% version. This version of this license is in
+%%    http://www.latex-project.org/lppl/lppl-1-3c.txt
+%% and the latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of
+%% LaTeX version 2005/12/01 or later.
+%% 
+%% This work has the LPPL maintenance status "maintained".
+%% 
+%% Current Maintainers of this work ares Volker RW Schaa and Zhichu Chen.
+%% 
+%% This work consists of the following files
+%%   jacow.cls: JACoW class file
+%%   jacow.def: JACoW LaTeX macro definitions file
+%%   jacow.bbx: JACoW’s biblatex bibliography style
+%%   jacow.cbx: JACoW’s biblatex cite style
+%% 
+%% 
+%% Template                         a short example listing the key features of the JACoW class
+%%   
+%% 
+%% 
+%% JACoW LaTeX Style Guide      detailed guide with recommendations for good scientific writing, how to typeset unit, isotopes and elements, and much more…
+%%   
+%% 
+%  ┌────────┐
+%  │ 3.01.0 │
+%  └────────┘
+%  - initial standalone BibLaTeX package separated from the class file
+%  - version numbering: `major.minor.fix' where
+%    - `major.minor' follows the upstream `jacow.cls'
+%    - `fix' starts from 0 and gets reset to 1 by the update of `jacow.cls'
+%                                                              Zhichu Chen, 04 May 2026
+%  ====================================================================================
+%  ┌────────┐
+%  │ 3.01.1 │
+%  └────────┘
+%  - `@software' title goes back from `SᴍᴀʟʟCᴀᴘs' to `Upright Roman'
+%  - add a new entry driver: `@preprint' whose mandatory fields are:
+%    - author, title, eprinttype, eprint
+%    and optional fields:
+%    - eprintclass, doi, url, date, pubstate
+%                                                              Zhichu Chen, 30 Jun 2026
+
 %% biblatex-jacow --- A biblatex implementation of the
 %% «
 %%   JACoW bibliography style
@@ -5,8 +59,8 @@
 
 \ProvidesExplFile %«
   {jacow.bbx}
-  {2024/03/21}
-  {0.01}
+  {2026-06-30}
+  {3.01.1}
   {JACoW biblatex bibliography style} %»
 
 \RequireBibliographyStyle{numeric-comp}
@@ -30,7 +84,7 @@
 \regex_const:Nn \l_word_with_init_regex { (\A|\c{bibinithyphendelim}|\c{bibinitdelim}) (\cL.) (\cL.)* \.? }
 \regex_const:Nn \l_bibnamedelim:_regex { \c{bibnamedelim[[:alpha:]]+} }
 \tl_new:N \l_jacow_bib_unpublished_type
-\clist_const:Nn \l_jacow_unpublished_types {atevent,atconf,thisevent,thisconf,submitted,submittedto,private}
+\clist_const:Nn \l_jacow_unpublished_types {atevent,atconf,thisevent,thisconf,submitted,accepted,private}
 \tl_new:N \l_jacow_bib_event_title
 \tl_new:N \l_jacow_bib_event_id_tl
 \tl_new:N \l_jacow_bib_current_id_tl
@@ -327,7 +381,7 @@
     atevent     = unpublished,
     atconf      = unpublished,
     submitted   = submitted\addspace for\addspace publication,
-    submittedto = to\addspace be\addspace published,
+    accepted    = to\addspace be\addspace published,
     thisevent   = this\addspace conference,
     thisconf    = this\addspace conference,
     private     = private\addspace communication,
@@ -506,6 +560,26 @@
     \usebibmacro{finentry}
   } %»
 
+\DeclareDatamodelFields[type=field,datatype=literal]{eprintserver}
+
+\DeclareBibliographyDriver{preprint} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \usebibmacro{eprintserver}
+      \newunit\newblock
+      \usebibmacro{eprinttype+eprint+eprintclass}
+      \newunit\newblock
+      \printdate
+      \newunit\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
 
 \DeclareBibliographyDriver{software} %«
   {
@@ -573,6 +647,8 @@
       \newunit\newblock
       \usebibmacro{title}
       \newunit\newblock
+      \printlist{institution}
+      \newunit\newblock
       \printlist{location}
       \newunit\newblock
       \printfield{number}
@@ -602,56 +678,6 @@
     \usebibmacro{finentry}
   } %»
 
-
-\DeclareSourcemap %«
-  {
-    \maps[datatype=bibtex] %«
-      {
-        \map %«
-            {
-              \step[fieldsource=paper, fieldtarget=eid]
-            } %»
-        \map %«
-          {
-            \step[typesource=atevent,   typetarget=unpublished,final]
-            \step[fieldset=type,        fieldvalue=atevent]
-          } %»
-        \map %«
-          {
-            \step[typesource=atconf,    typetarget=unpublished,final]
-            \step[fieldset=type,        fieldvalue=atevent]
-          } %»
-        \map %«
-          {
-            \step[typesource=thisevent, typetarget=unpublished,final]
-            \step[fieldset=type,        fieldvalue=thisevent]
-          } %»
-        \map %«
-          {
-            \step[typesource=thisconf,  typetarget=unpublished,final]
-            \step[fieldset=type,        fieldvalue=thisevent]
-          } %»
-        \map %«
-          {
-            \step[typesource=submitted, typetarget=unpublished,final]
-            \step[fieldset=type,        fieldvalue=submitted]
-          } %»
-        \map %«
-          {
-            \step[typesource=submittedto, typetarget=unpublished,final]
-            \step[fieldset=type,          fieldvalue=submittedto]
-          } %»
-        \map %«
-          {
-            \step[typesource=private,     typetarget=unpublished,final]
-            \step[fieldset=type,          fieldvalue=private]
-          } %»
-        \map %«
-          {
-            \step[fieldsource=title,match=\regexp{“(.*?)”},replace=\regexp{\\mkbibquote\{$1\}}]
-          } %»
-      } %»
-  } %»
 
 \DeclareDriverSourcemap[datatype=bibtex]{
   \map{
@@ -688,7 +714,70 @@
 }
 
 
-\DeclareFieldFormat{sentencecase}{\MakeSentenceCase{#1}}
+\DeclareSourcemap %«
+  {
+    \maps[datatype=bibtex] %«
+      {
+        \map {
+          \pertype{inproceedings}
+          \pertype{unpublished}
+          \step[fieldsource=paper, fieldtarget=eid]
+        }
+        \map %«
+          {
+            \step[typesource=atevent,   typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=atevent]
+          } %»
+        \map %«
+          {
+            \step[typesource=atconf,    typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=atevent]
+          } %»
+        \map %«
+          {
+            \step[typesource=thisevent, typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=thisevent]
+          } %»
+        \map %«
+          {
+            \step[typesource=thisconf,  typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=thisevent]
+          } %»
+        \map %«
+          {
+            \step[typesource=submitted, typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=submitted]
+          } %»
+        \map %«
+          {
+            \step[typesource=accepted, typetarget=unpublished,final]
+            \step[fieldset=type,          fieldvalue=accepted]
+          } %»
+        \map %«
+          {
+            \step[typesource=private,     typetarget=unpublished,final]
+            \step[fieldset=type,          fieldvalue=private]
+          } %»
+        \map {
+          \pertype{preprint}
+          \step[fieldsource=archiveprefix]
+          \step[fieldset=eprinttype, origfieldval]
+          \step[fieldsource=eprinttype]
+          \step[fieldset=eprintserver, origfieldval]
+        }
+        \map {
+          \pertype{preprint}
+          \step[fieldsource=url, final]
+          \step[fieldset=doi, origfieldval]
+          \step[fieldsource=doi, match=\regexp{.*arxiv\.org.*/([0-9.]+).*}, replace=\regexp{10.48550/arXiv.$1}]
+        }
+        \map %«
+          {
+            \step[fieldsource=title,match=\regexp{“(.*?)”},replace=\regexp{\\mkbibquote\{$1\}}]
+          } %»
+      } %»
+  } %»
+
 \DeclareFieldFormat[inproceedings]{booktitle} %«
   {
     \bibstring{in}\addspace
@@ -728,12 +817,17 @@
 \DeclareFieldFormat[article,periodical]{issue}{\bibstring{number}\nobreakspace#1}
 \DeclareFieldFormat[article,periodical]{number}{\bibstring{number}\nobreakspace#1}
 \DeclareFieldFormat[report]{number}{\addspace#1}
+\DeclareFieldFormat{eprintserver}{\mkbibemph{#1}}
+\DeclareFieldFormat{eprintclass}{\mkbibbrackets{#1}}
+\DeclareFieldFormat{eprinttype}{#1}
+\DeclareFieldFormat{eprint}{#1}
 \DeclareFieldFormat[patent]{number}{No.\nobreakspace#1}
 \DeclareFieldFormat[standard]{number}{Standard\nobreakspace#1}
 \DeclareFieldFormat{title}{\mkbibquote{#1\isdot}}
+\DeclareFieldFormat{titlecase}{\MakeSentenceCase*{#1}}
 \DeclareFieldFormat[book,manual]{title}{\mkbibemph{#1\isdot}}
-\DeclareFieldFormat[online]{title}{#1}
-\DeclareFieldFormat[software]{title}{\textsc{#1}}
+\DeclareFieldFormat[book,manual]{titlecase}{{#1}}
+\DeclareFieldFormat[online,software,misc]{title}{#1}
 \DeclareFieldFormat{maintitle}{\bibstring{in}\addspace\mkbibemph{#1\isdot}}
 \DeclareFieldFormat{booktitle}{\bibstring{in}\addspace\mkbibemph{#1\isdot}}
 \DeclareFieldFormat{eid}{paper\addspace#1}
@@ -770,9 +864,9 @@
   }
   {}
   {\printtext[title]{%
-      \printfield[sentencecase]{title}%
+      \printfield[titlecase]{title}%
       \setunit{\subtitlepunct}%
-      \printfield[sentencecase]{subtitle}}%
+      \printfield[titlecase]{subtitle}}%
     \newunit}%
   \printfield{titleaddon}}
 \newbibmacro*{eventdate/date/mon.year} %«
@@ -919,6 +1013,23 @@
     \iffieldequalstr{type}{private}
       {\printdate}
       {} %»
+  } %»
+\newbibmacro*{eprintserver} %«
+  {
+    \printfield{eprintserver}
+  } %»
+\newbibmacro*{eprinttype+eprint+eprintclass} %«
+  {
+    \printfield{eprinttype}
+    \iffieldundef{eprint}
+      {}
+      {
+        \setunit*{\addcolon}
+        \printfield{eprint}
+        \setunit*{\space}
+        \printfield{eprintclass}
+      }
+    \setunit*{\addcomma\space}
   } %»
 \renewbibmacro*{finentry} %«
   {
